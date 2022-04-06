@@ -24,9 +24,11 @@ import org.opencds.cqf.cql.engine.data.CompositeDataProvider
 import org.opencds.cqf.cql.engine.fhir.model.R4FhirModelResolver
 import org.opencds.cqf.cql.evaluator.engine.model.CachingModelResolverDecorator
 import org.opencds.cqf.cql.evaluator.fhir.adapter.r4.AdapterFactory
+import org.opencds.cqf.cql.evaluator.measure.MeasureEvalConfig
+import org.opencds.cqf.cql.evaluator.measure.MeasureEvalOptions
 import org.opencds.cqf.cql.evaluator.measure.r4.R4MeasureProcessor
 
-class FhirOperator(fhirContext: FhirContext, fhirEngine: FhirEngine) {
+class FhirOperator(fhirContext: FhirContext, fhirEngine: FhirEngine, debugLogsOn: Boolean = false) {
   private var measureProcessor: R4MeasureProcessor
   val fhirEngineDal = FhirEngineDal(fhirEngine)
   val adapterFactory = AdapterFactory()
@@ -45,7 +47,25 @@ class FhirOperator(fhirContext: FhirContext, fhirEngine: FhirEngine) {
         bundleRetrieveProvider
       )
     measureProcessor =
-      R4MeasureProcessor(terminologyProvider, libraryContentProvider, dataProvider, fhirEngineDal)
+      if (debugLogsOn) {
+        R4MeasureProcessor(
+          null,
+          null,
+          null,
+          null,
+          null,
+          terminologyProvider,
+          libraryContentProvider,
+          dataProvider,
+          fhirEngineDal,
+          MeasureEvalConfig().apply {
+            measureEvalOptions.add(MeasureEvalOptions.ENABLE_DEBUG_LOGGING)
+          },
+          null
+        )
+      } else {
+        R4MeasureProcessor(terminologyProvider, libraryContentProvider, dataProvider, fhirEngineDal)
+      }
   }
 
   fun loadLib(lib: Library) {
